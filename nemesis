@@ -1,0 +1,10 @@
+#!/bin/bash
+# Nemesis: Bash wrapper for Nemesis Python crawler
+# Use NEMESIS_DIR if set, else try to find the script's project directory
+NEMESIS_DIR="${NEMESIS_DIR:-$(dirname "$(realpath "$0")")}"
+if [ ! -f "${NEMESIS_DIR}/nemesis.py" ] || [ ! -f "${NEMESIS_DIR}/venv/bin/python" ]; then
+    echo "Error: Cannot find nemesis.py or venv/bin/python in ${NEMESIS_DIR}"
+    echo "Set NEMESIS_DIR environment variable to the nemesis project directory (e.g., export NEMESIS_DIR=/home/youruser/nemesis)"
+    exit 1
+fi
+"${NEMESIS_DIR}/venv/bin/python" "${NEMESIS_DIR}/nemesis.py" "$@"

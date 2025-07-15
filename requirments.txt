@@ -1,0 +1,7 @@
+aiohttp
+beautifulsoup4
+psutil
+aiohttp-socks
+pybloom-live
+pymongo
+tqdm
