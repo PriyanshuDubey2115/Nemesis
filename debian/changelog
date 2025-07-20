@@ -1,0 +1,7 @@
+nemesis (1.0-1) unstable; urgency=medium
+
+  * Initial release of Nemesis dark web crawler.
+  * Includes Python-based crawler for .onion sites with Tor and MongoDB support.
+  * Supports automated installation via setup.sh and Debian package.
+
+ -- Priyanshu Dubey <dpriyanshu724@gmail.com>  Sun, 20 Jul 2025 15:00:00 +0530
