@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+INSTALL_DIR="/usr/share/nemesis"
+VENV_DIR="$INSTALL_DIR/venv"
+BIN_DIR="/usr/local/bin"
+
+# Set up virtual environment
+python3 -m venv "$VENV_DIR"
+. "$VENV_DIR/bin/activate"
+pip install --upgrade pip
+pip install -r "$INSTALL_DIR/requirements.txt"
+
+# Create global command
+cat << EOF > "$BIN_DIR/nemesis"
+#!/bin/bash
+# Nemesis: Bash wrapper for Nemesis Python crawler
+NEMESIS_DIR="$INSTALL_DIR"
+if [ ! -f "\${NEMESIS_DIR}/nemesis.py" ] || [ ! -f "\${NEMESIS_DIR}/venv/bin/python" ]; then
+    echo "Error: Cannot find nemesis.py or venv/bin/python in \${NEMESIS_DIR}" >&2
+    exit 1
+fi
+"\${NEMESIS_DIR}/venv/bin/python" "\${NEMESIS_DIR}/nemesis.py" "\$@"
+EOF
+
+chmod +x "$BIN_DIR/nemesis"
+chmod +x "$INSTALL_DIR/nemesis.py"
+
+# Ensure services are running
+systemctl start tor || true
+systemctl start mongodb || true
+
+echo "Nemesis installed successfully. Run 'nemesis -h' for usage."

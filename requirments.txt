@@ -5,3 +5,4 @@ aiohttp-socks
 pybloom-live
 pymongo
 tqdm
+coloram
