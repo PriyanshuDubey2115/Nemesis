@@ -1,4 +1,4 @@
-nemesis (1.0-1) unstable; urgency=medium
+nemesis (1.0) unstable; urgency=medium
 
   * Initial release of Nemesis dark web crawler.
   * Includes Python-based crawler for .onion sites with Tor and MongoDB support.

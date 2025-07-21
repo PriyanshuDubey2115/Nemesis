@@ -1,4 +1,3 @@
-d384706ea612f6fa2ce6f9c4e885dc31  opt/nemesis/requirements.txt
-ed4609dd9317ca06f639791c945bf110  usr/share/doc/nemesis/changelog.Debian.gz
-45ba09d6fd683a40e0cc22d38b7b04ba  usr/share/nemesis/nemesis.py
+f66e43c872bf0b1bc5524585c3be7e06  usr/share/doc/nemesis/changelog.gz
+10560ed3e864dead6ac3301b7a942fbb  usr/share/nemesis/nemesis.py
 d384706ea612f6fa2ce6f9c4e885dc31  usr/share/nemesis/requirements.txt
