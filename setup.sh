@@ -53,16 +53,21 @@ pip install -r requirements.txt
 
 # Create global command
 echo "Creating global command at $BIN_DIR/nemesis..."
-cat << EOF | sudo tee "$BIN_DIR/nemesis" > /dev/null
+cat << 'EOF' | sudo tee "$BIN_DIR/nemesis" > /dev/null
 #!/bin/bash
 # Nemesis: Bash wrapper for Nemesis Python crawler
-NEMESIS_DIR="$INSTALL_DIR"
-if [ ! -f "\${NEMESIS_DIR}/nemesis.py" ] || [ ! -f "\${NEMESIS_DIR}/venv/bin/python" ]; then
-    echo "Error: Cannot find nemesis.py or venv/bin/python in \${NEMESIS_DIR}" >&2
-    echo "Set NEMESIS_DIR environment variable to the nemesis project directory (e.g., export NEMESIS_DIR=$INSTALL_DIR)" >&2
+NEMESIS_DIR="$HOME/nemesis"
+
+if [ ! -f "$NEMESIS_DIR/nemesis.py" ] || [ ! -f "$NEMESIS_DIR/venv/bin/activate" ]; then
+    echo "Error: nemesis.py or virtual environment not found in $NEMESIS_DIR" >&2
     exit 1
 fi
-"\${NEMESIS_DIR}/venv/bin/python" "\${NEMESIS_DIR}/nemesis.py" "\$@"
+
+# Activate virtual environment
+source "$NEMESIS_DIR/venv/bin/activate"
+
+# Run the Python script
+python "$NEMESIS_DIR/nemesis.py" "$@"
 EOF
 
 # Set permissions

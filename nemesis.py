@@ -27,6 +27,7 @@ except ImportError:
     # ANSI escape codes for green color
     class Fore:
         GREEN = '\033[92m'
+        CYAN = '\033[96m'
     class Style:
         RESET_ALL = '\033[0m'
 
@@ -46,7 +47,23 @@ def display_ascii_banner():
 /_/ |_/_____/_/  /_/_____//____/___//____/"""
     
     print(Fore.GREEN + banner + Style.RESET_ALL)
+    print(Fore.CYAN + "        Dark Web Crawler for .onion Sites" + Style.RESET_ALL)
     print()
+
+def show_help():
+    """Display custom help text with banner"""
+    display_ascii_banner()
+    print("""Usage: nemesis [OPTIONS]
+
+Options:
+  -h, --help            Show this help message and exit
+  -k KEYWORD, --keyword KEYWORD
+                        Crawl and filter URLs containing the specified keyword
+  -t TIME, --time TIME  Set crawl duration in minutes (10-180, default: 30)
+  -s START_URL, --start-url START_URL
+                        Specify a custom .onion URL to start the crawl
+  -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                        Specify a custom output directory for saving files""")
 
 CONFIG = {
     'TOR_PROXY': 'socks5://127.0.0.1:9050',
@@ -325,9 +342,7 @@ async def crawl(url, session, mongo_manager, keyword=None):
 
 async def main(args):
     global time_limit_reached
-    
-    # Display ASCII banner
-    display_ascii_banner()
+    display_ascii_banner()  # Banner now only shows once at start of main
     
     # Handle Output Directory
     base_dir = os.path.abspath(args.output_dir) if args.output_dir else os.path.abspath('data')
@@ -437,13 +452,19 @@ async def main(args):
     mongo_manager.close()
 
 def parse_arguments():
+    # Initialize colorama early
+    if COLORAMA_AVAILABLE:
+        init()
+
+    # Show help if requested
+    if '-h' in sys.argv or '--help' in sys.argv:
+        show_help()
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(
-        description="Nemesis - A Dark Web Crawler for .onion Sites\n\n"
-                    "Crawls .onion websites, saves HTML content, and optionally filters pages by a keyword.\n"
-                    "Output files (queue.txt, visited_links.txt, keyword_matches.txt, crawler.log) and raw HTML\n"
-                    "are saved to a subdirectory in the specified or default output directory (data/).\n"
-                    "For custom directories, a new subdirectory named <keyword>_<number> is created for each run.",
-        formatter_class=argparse.RawTextHelpFormatter
+        description="Nemesis - A Dark Web Crawler for .onion Sites",
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=False  # We handle help manually
     )
     parser.add_argument(
         '-k', '--keyword',
@@ -470,9 +491,17 @@ def parse_arguments():
              'Creates a subdirectory named <keyword>_<number> (e.g., modi_1)\n'
              'Default: data/ (creates numbered subdirectories)'
     )
+    parser.add_argument(
+        '-h', '--help',
+        action='store_true',
+        help='Show this help message and exit'
+    )
+    
     args = parser.parse_args()
     if args.time < 10 or args.time > 180:
-        parser.error("Time limit must be between 10 and 180 minutes.")
+        print("Error: Time limit must be between 10 and 180 minutes.")
+        show_help()
+        sys.exit(1)
     return args
 
 if __name__ == "__main__":
