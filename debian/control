@@ -1,7 +1,7 @@
 Source: nemesis
 Section: web
 Priority: optional
-Maintainer: Priyanshu Dubey <priyanshu.dubey@example.com>
+Maintainer: Priyanshu Dubey <dpriyanshu724@gmail.com>
 Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.6.2
 Homepage: https://github.com/PriyanshuDubey2115/Nemesis
