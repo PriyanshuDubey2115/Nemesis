@@ -1,11 +1,11 @@
 #!/bin/bash
 # Setup script for Nemesis dark web crawler
 
-# Exit on error
-set -e
+set -e  # Exit on error
 
 # Detect OS
 DISTRO=$(lsb_release -is 2>/dev/null || echo "Unknown")
+UBUNTU_CODENAME=$(lsb_release -cs 2>/dev/null || echo "unknown")
 
 echo "Detected Linux Distribution: $DISTRO"
 
@@ -26,7 +26,7 @@ EOF
 
 echo "Installing Nemesis dark web crawler..."
 
-# Install dependencies based on distribution
+# Install dependencies
 if [[ "$DISTRO" == "Kali" ]]; then
     echo "Installing dependencies for Kali Linux..."
     sudo apt-get update
@@ -37,25 +37,27 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt-get update
     sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg lsb-release ca-certificates wget
 
-    # Install MongoDB 7.0
     echo "Installing MongoDB 7.0 for Ubuntu..."
 
-    # Step 1: Import the MongoDB public GPG key
+    # Step 1: Install required tools
+    sudo apt install -y curl gnupg
+
+    # Step 2: Import the MongoDB public GPG key
     curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
       sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
 
-    # Step 2: Add the MongoDB repository
-    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
+    # Step 3: Add the MongoDB repository (force use of Ubuntu 22.04 "jammy" even on 24.04+)
+    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | \
       sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
-    # Step 3: Update the package list
+    # Step 4: Update APT cache
     sudo apt-get update
 
-    # Step 4: Install MongoDB
+    # Step 5: Install MongoDB
     sudo apt-get install -y mongodb-org
 fi
 
-# Step 5: Start and enable services
+# Start and enable services
 echo "Starting Tor and MongoDB services..."
 sudo systemctl start tor
 sudo systemctl enable tor
@@ -76,7 +78,7 @@ mkdir -p "$INSTALL_DIR"
 echo "Copying nemesis.py to $INSTALL_DIR..."
 cp nemesis.py "$NEMESIS_SCRIPT"
 
-# Set up virtual environment
+# Set up Python virtual environment
 echo "Setting up Python virtual environment..."
 python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
@@ -112,6 +114,7 @@ chmod +x "$NEMESIS_SCRIPT"
 # Clean up
 deactivate
 
+# Final message
 echo "✅ Installation complete!"
 echo "Run 'nemesis -h' to see usage instructions."
 echo "Ensure Tor and MongoDB are running with:"
