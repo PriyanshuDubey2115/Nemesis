@@ -31,25 +31,26 @@ if [[ "$DISTRO" == "Kali" ]]; then
     echo "Installing dependencies for Kali Linux..."
     sudo apt-get update
     sudo apt-get install -y tor mongodb python3 python3-pip python3-venv
+
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
     echo "Installing dependencies for Ubuntu..."
-
-    # Tor is available by default
     sudo apt-get update
-    sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg
+    sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg lsb-release ca-certificates
 
     # Install MongoDB using the official MongoDB repo
     echo "Installing MongoDB for Ubuntu..."
     curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
-      sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
-      --dearmor
+        sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
+
     echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
-      sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+        sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
     sudo apt-get update
     sudo apt-get install -y mongodb-org
-else
-    echo "Unsupported Linux distribution: $DISTRO"
-    exit 1
+
+    # Pin the MongoDB version to avoid unintended upgrades
+    echo "mongodb-org hold" | sudo dpkg --set-selections
+    echo "mongodb-org-database hold" | sudo dpkg --set-selections
 fi
 
 # Start and enable services
@@ -61,8 +62,8 @@ if [[ "$DISTRO" == "Kali" ]]; then
     sudo systemctl start mongodb
     sudo systemctl enable mongodb
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
-    sudo systemctl enable mongod
     sudo systemctl start mongod
+    sudo systemctl enable mongod
 fi
 
 # Create installation directory
