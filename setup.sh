@@ -37,23 +37,25 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt-get update
     sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg lsb-release ca-certificates wget
 
-    # Install MongoDB 6.0 using working instructions
-    echo "Installing MongoDB 6.0 for Ubuntu..."
+    # Install MongoDB 7.0
+    echo "Installing MongoDB 7.0 for Ubuntu..."
 
-    # Step 1: Import MongoDB GPG key
-    wget -qO - https://pgp.mongodb.com/server-6.0.asc | sudo tee /etc/apt/trusted.gpg.d/mongodb.asc > /dev/null
+    # Step 1: Import the MongoDB public GPG key
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+      sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
 
-    # Step 2: Add MongoDB repository
-    echo "deb [ arch=amd64,arm64 signed-by=/etc/apt/trusted.gpg.d/mongodb.asc ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+    # Step 2: Add the MongoDB repository
+    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
+      sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
-    # Step 3: Update APT cache
+    # Step 3: Update the package list
     sudo apt-get update
 
     # Step 4: Install MongoDB
     sudo apt-get install -y mongodb-org
 fi
 
-# Start and enable services
+# Step 5: Start and enable services
 echo "Starting Tor and MongoDB services..."
 sudo systemctl start tor
 sudo systemctl enable tor
@@ -119,4 +121,5 @@ if [[ "$DISTRO" == "Kali" ]]; then
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
     echo "  sudo systemctl status tor"
     echo "  sudo systemctl status mongod"
+    echo "  Run 'mongosh' to enter MongoDB shell"
 fi
