@@ -39,9 +39,12 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg
 
     # Install MongoDB using the official MongoDB repo
-    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
-    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-
+    echo "Installing MongoDB for Ubuntu..."
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+      sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+      --dearmor
+    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
+      sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
     sudo apt-get update
     sudo apt-get install -y mongodb-org
 else
@@ -58,8 +61,8 @@ if [[ "$DISTRO" == "Kali" ]]; then
     sudo systemctl start mongodb
     sudo systemctl enable mongodb
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
-    sudo systemctl start mongod
     sudo systemctl enable mongod
+    sudo systemctl start mongod
 fi
 
 # Create installation directory
