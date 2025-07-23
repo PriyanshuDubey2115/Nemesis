@@ -35,22 +35,22 @@ if [[ "$DISTRO" == "Kali" ]]; then
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
     echo "Installing dependencies for Ubuntu..."
     sudo apt-get update
-    sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg lsb-release ca-certificates
+    sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg lsb-release ca-certificates wget
 
-    # Install MongoDB using the official MongoDB repo
-    echo "Installing MongoDB for Ubuntu..."
-    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
-        sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
+    # Install MongoDB 6.0 using working instructions
+    echo "Installing MongoDB 6.0 for Ubuntu..."
 
-    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
-        sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    # Step 1: Import MongoDB GPG key
+    wget -qO - https://pgp.mongodb.com/server-6.0.asc | sudo tee /etc/apt/trusted.gpg.d/mongodb.asc > /dev/null
 
+    # Step 2: Add MongoDB repository
+    echo "deb [ arch=amd64,arm64 signed-by=/etc/apt/trusted.gpg.d/mongodb.asc ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+
+    # Step 3: Update APT cache
     sudo apt-get update
-    sudo apt-get install -y mongodb-org
 
-    # Pin the MongoDB version to avoid unintended upgrades
-    echo "mongodb-org hold" | sudo dpkg --set-selections
-    echo "mongodb-org-database hold" | sudo dpkg --set-selections
+    # Step 4: Install MongoDB
+    sudo apt-get install -y mongodb-org
 fi
 
 # Start and enable services
@@ -110,7 +110,7 @@ chmod +x "$NEMESIS_SCRIPT"
 # Clean up
 deactivate
 
-echo "Installation complete!"
+echo "✅ Installation complete!"
 echo "Run 'nemesis -h' to see usage instructions."
 echo "Ensure Tor and MongoDB are running with:"
 if [[ "$DISTRO" == "Kali" ]]; then
