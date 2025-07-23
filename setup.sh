@@ -4,6 +4,11 @@
 # Exit on error
 set -e
 
+# Detect OS
+DISTRO=$(lsb_release -is 2>/dev/null || echo "Unknown")
+
+echo "Detected Linux Distribution: $DISTRO"
+
 # Define installation directory
 INSTALL_DIR="$HOME/nemesis"
 VENV_DIR="$INSTALL_DIR/venv"
@@ -21,17 +26,41 @@ EOF
 
 echo "Installing Nemesis dark web crawler..."
 
-# Install system dependencies
-echo "Installing system dependencies (Tor, MongoDB, Python3, pip)..."
-sudo apt-get update
-sudo apt-get install -y tor mongodb python3 python3-pip python3-venv
+# Install dependencies based on distribution
+if [[ "$DISTRO" == "Kali" ]]; then
+    echo "Installing dependencies for Kali Linux..."
+    sudo apt-get update
+    sudo apt-get install -y tor mongodb python3 python3-pip python3-venv
+elif [[ "$DISTRO" == "Ubuntu" ]]; then
+    echo "Installing dependencies for Ubuntu..."
+
+    # Tor is available by default
+    sudo apt-get update
+    sudo apt-get install -y tor python3 python3-pip python3-venv curl gnupg
+
+    # Install MongoDB using the official MongoDB repo
+    curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
+    echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+    sudo apt-get update
+    sudo apt-get install -y mongodb-org
+else
+    echo "Unsupported Linux distribution: $DISTRO"
+    exit 1
+fi
 
 # Start and enable services
 echo "Starting Tor and MongoDB services..."
 sudo systemctl start tor
 sudo systemctl enable tor
-sudo systemctl start mongodb
-sudo systemctl enable mongodb
+
+if [[ "$DISTRO" == "Kali" ]]; then
+    sudo systemctl start mongodb
+    sudo systemctl enable mongodb
+elif [[ "$DISTRO" == "Ubuntu" ]]; then
+    sudo systemctl start mongod
+    sudo systemctl enable mongod
+fi
 
 # Create installation directory
 echo "Creating installation directory at $INSTALL_DIR..."
@@ -80,5 +109,10 @@ deactivate
 echo "Installation complete!"
 echo "Run 'nemesis -h' to see usage instructions."
 echo "Ensure Tor and MongoDB are running with:"
-echo "  sudo systemctl status tor"
-echo "  sudo systemctl status mongodb"
+if [[ "$DISTRO" == "Kali" ]]; then
+    echo "  sudo systemctl status tor"
+    echo "  sudo systemctl status mongodb"
+elif [[ "$DISTRO" == "Ubuntu" ]]; then
+    echo "  sudo systemctl status tor"
+    echo "  sudo systemctl status mongod"
+fi
