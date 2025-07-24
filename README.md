@@ -1,5 +1,7 @@
 # Nemesis - Dark Web Crawler
 
+![Nemesis Banner](images/nemesis-banner.png)
+
 Nemesis is a Python-based dark web crawler for .onion sites, designed to crawl Tor hidden services, save HTML content, and filter pages by keywords. It uses Tor for anonymity, MongoDB for storage, and supports concurrent crawling with system resource monitoring.
 
 ## Features
