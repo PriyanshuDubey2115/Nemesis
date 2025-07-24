@@ -404,17 +404,17 @@ async def main(args):
             logger.info(f"Starting with user-specified URL: {args.start_url}")
         else:
             seed_urls = [
-                "http://torlinksge6enmcyyuxjpjkoouw4oorgdgeo7ftnq3zodj7g2zxi3kyd.onion/",
-                "http://deeeepv4bfndyatwkdzeciebqcwwlvgqa6mofdtsvwpon4elfut7lfqd.onion",
-                "http://dirv5xzyddnqx3qkyt3vuu5doij2blzhvqrwrnimcnykgajdwxg4uhyd.onion",
-                "http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion",
-                "http://szucmy6cimvi6dn7chranersldcurofscizhhiqdzynjdvqhaz2y3hid.onion",
-                "http://kikurizsbpb7ar4ozrzogt6nre3j7s7mccqwxeg3jvppyik2aa475lqd.onion",
-                "http://freeoln2btbss3bpbrj7jl455etuwh2qncheir54y5optbv3gd64b4qd.onion",
-                "http://ahbjmi35wmy5irrctbnkfm4wpnvt47lep6azuogxenrrtlte2mu6fdyd.onion",
-                "http://i6wppmmtdgfklr3swycl6teeyhsdvujs7scp4a63xjzkkdkyau63w3yd.onion",
-                "http://darkoxfbjibhbb65wtvdnjygyi46a4xrjcakqkrzuw7ch6o7xgxhxmid.onion"
-            ]
+		    "http://torlinksge6enmcyyuxjpjkoouw4oorgdgeo7ftnq3zodj7g2zxi3kyd.onion/",
+		    "http://deeeepv4bfndyatwkdzeciebqcwwlvgqa6mofdtsvwpon4elfut7lfqd.onion",
+		    "http://dirv5xzyddnqx3qkyt3vuu5doij2blzhvqrwrnimcnykgajdwxg4uhyd.onion",
+		    "http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion",
+		    "http://szucmy6cimvi6dn7chranersldcurofscizhhiqdzynjdvqhaz2y3hid.onion",
+		    "http://kikurizsbpb7ar4ozrzogt6nre3j7s7mccqwxeg3jvppyik2aa475lqd.onion",
+		    "http://freeoln2btbss3bpbrj7jl455etuwh2qncheir54y5optbv3gd64b4qd.onion",
+		    "http://ahbjmi35wmy5irrctbnkfm4wpnvt47lep6azuogxenrrtlte2mu6fdyd.onion",
+		    "http://i6wppmmtdgfklr3swycl6teeyhsdvujs7scp4a63xjzkkdkyau63w3yd.onion",
+		    "http://darkoxfbjibhbb65wtvdnjygyi46a4xrjcakqkrzuw7ch6o7xgxhxmid.onion"
+		]
             random_url = random.choice(seed_urls)
             queue.append(random_url)
             logger.info(f"No queue found. Starting with random seed URL: {random_url}")
