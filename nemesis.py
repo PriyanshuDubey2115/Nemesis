@@ -88,6 +88,19 @@ HEADERS = {
     'Connection': 'keep-alive'
 }
 
+SEED_URLS = [
+    "http://torlinksge6enmcyyuxjpjkoouw4oorgdgeo7ftnq3zodj7g2zxi3kyd.onion/",
+    "http://deeeepv4bfndyatwkdzeciebqcwwlvgqa6mofdtsvwpon4elfut7lfqd.onion",
+    "http://dirv5xzyddnqx3qkyt3vuu5doij2blzhvqrwrnimcnykgajdwxg4uhyd.onion",
+    "http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion",
+    "http://blinkxxvrydjgxao4lf6wqgxqbddw4xkawbe2zacs7sqlfxnb5ei2xid.onion/",
+    "https://hidden.wiki/",
+    "http://torguif5kabt7q5uff5mkw5fezkydyxhiee2ag5wzlduldcqqcibqfqd.onion/",
+    "http://mb64yo6f6p6fss7sj2e7kam42apjkpn6hpcmdfpf7rp3yu4kfrhdu2qd.onion/",
+    "http://gz2wuxoarcha7jorhwxncvkmrf2vtbwmxrquanc3tbhvmscblam6hmad.onion/",
+    "http://kawbtpskqu7rr3t6ecz4fyutpzq7jtblin3wv5vamneryu4nwenhkgyd.onion/mediawiki/index.php?title=Tor",
+]
+
 visited = ScalableBloomFilter(initial_capacity=100000, error_rate=0.001)
 queue_filter = ScalableBloomFilter(initial_capacity=100000, error_rate=0.001)
 time_limit_reached = False
@@ -398,21 +411,13 @@ async def main(args):
     queue = URLManager.load_queue()
     visited_set = URLManager.load_visited()
     
+    # Initialize with either user-provided URL or random seed URL
     if not queue:
         if args.start_url and CrawlerUtils.is_valid_onion_url(args.start_url):
             queue.append(args.start_url)
             logger.info(f"Starting with user-specified URL: {args.start_url}")
         else:
-            seed_urls = [
-		    "http://torlinksge6enmcyyuxjpjkoouw4oorgdgeo7ftnq3zodj7g2zxi3kyd.onion/",
-		    "http://deeeepv4bfndyatwkdzeciebqcwwlvgqa6mofdtsvwpon4elfut7lfqd.onion",
-		    "http://dirv5xzyddnqx3qkyt3vuu5doij2blzhvqrwrnimcnykgajdwxg4uhyd.onion",
-		    "http://jaz45aabn5vkemy4jkg4mi4syheisqn2wn2n4fsuitpccdackjwxplad.onion",
-		    "http://szucmy6cimvi6dn7chranersldcurofscizhhiqdzynjdvqhaz2y3hid.onion",
-		    "http://i6wppmmtdgfklr3swycl6teeyhsdvujs7scp4a63xjzkkdkyau63w3yd.onion",
-		    "http://darkoxfbjibhbb65wtvdnjygyi46a4xrjcakqkrzuw7ch6o7xgxhxmid.onion"
-		]
-            random_url = random.choice(seed_urls)
+            random_url = random.choice(SEED_URLS)
             queue.append(random_url)
             logger.info(f"No queue found. Starting with random seed URL: {random_url}")
             if args.start_url:
@@ -421,18 +426,37 @@ async def main(args):
     for url in visited_set:
         visited.add(url)
     connector = ProxyConnector.from_url(CONFIG['TOR_PROXY'])
+    
     async with aiohttp.ClientSession(connector=connector) as session:
         tqdm.set_lock(tqdm.get_lock())
         progress = tqdm_asyncio(total=len(visited_set), desc="Crawling Progress", position=0)
-        while queue and not time_limit_reached:
+        
+        while not time_limit_reached:
+            # Check if time limit has been reached
             if datetime.now() - start_time > time_limit:
                 logger.info(f"Time limit of {args.time} minutes reached. Stopping crawler.")
                 time_limit_reached = True
                 break
+                
+            # If queue is empty, add a random seed URL to continue crawling
+            if not queue:
+                random_url = random.choice(SEED_URLS)
+                if random_url not in visited and random_url not in queue_filter:
+                    queue.append(random_url)
+                    queue_filter.add(random_url)
+                    logger.info(f"Queue empty. Added random seed URL: {random_url}")
+                else:
+                    logger.info("Queue empty and all seed URLs already visited. Waiting...")
+                    await asyncio.sleep(5)
+                    continue
+                    
+            # Process a batch of URLs
             concurrency, delay = await CrawlerUtils.check_system_resources()
             batch = queue[:concurrency]
             queue = queue[concurrency:]
+            
             results = await tqdm_asyncio.gather(*[crawl(url, session, mongo_manager, args.keyword) for url in batch])
+            
             for html, url, new_links in results:
                 if html and new_links:
                     tqdm.write(f"Found {len(new_links)} new links on {url}")
@@ -445,13 +469,16 @@ async def main(args):
                     URLManager.save_visited(url)
                     progress.update(1)
                     progress.total = len(visited)
+            
             URLManager.save_queue(queue)
             await asyncio.sleep(delay)
+        
         progress.close()
         if time_limit_reached:
-            logger.info(f"Crawling paused. Saved {len(queue)} URLs to queue.")
+            logger.info(f"Crawling completed. Total time: {args.time} minutes.")
         else:
             logger.info("Crawling completed. No more URLs to crawl.")
+    
     mongo_manager.close()
 
 def parse_arguments():
